@@ -50,25 +50,36 @@ def trouver_paire(cartes):
     return None
 
 
+def est_suite_normale(valeurs):
+    # verifie si les valeurs forment une suite normale (sans trou)
+    return len(set(valeurs)) == 5 and valeurs[0] - valeurs[4] == 4
+
+
+def est_wheel(valeurs):
+    # verifie si c'est un wheel (A-2-3-4-5)
+    return set(valeurs) == {14, 2, 3, 4, 5}
+
+
+def ordonner_wheel(cartes):
+    # ordonne les cartes du wheel : 5, 4, 3, 2, A
+    resultat = []
+    for v in [5, 4, 3, 2, 14]:
+        for c in cartes:
+            if c.valeur() == v and c not in resultat:
+                resultat.append(c)
+                break
+    return resultat
+
+
 def trouver_suite(cartes):
     cartes_triees = sorted(cartes, key=lambda c: c.valeur(), reverse=True)
     valeurs = [c.valeur() for c in cartes_triees]
 
-    # verifier suite normale
-    if len(set(valeurs)) == 5:
-        if valeurs[0] - valeurs[4] == 4:
-            return cartes_triees
+    if est_suite_normale(valeurs):
+        return cartes_triees
 
-    # verifier suite ace-low (wheel) : A-2-3-4-5
-    if set(valeurs) == {14, 2, 3, 4, 5}:
-        # on met 5 en premier et l'as a la fin
-        resultat = []
-        for v in [5, 4, 3, 2, 14]:
-            for c in cartes:
-                if c.valeur() == v and c not in resultat:
-                    resultat.append(c)
-                    break
-        return resultat
+    if est_wheel(valeurs):
+        return ordonner_wheel(cartes)
 
     return None
 
