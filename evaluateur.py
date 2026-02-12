@@ -10,15 +10,24 @@ def compter_rangs(cartes):
     return compteur
 
 
+def filtrer_par_valeur(cartes, valeur):
+    # retourne les cartes qui ont la valeur donnee
+    return [c for c in cartes if c.valeur() == valeur]
+
+
+def kickers_tries(cartes, valeurs_exclues):
+    # retourne les kickers tries par valeur decroissante
+    # en excluant les valeurs donnees
+    return sorted([c for c in cartes if c.valeur() not in valeurs_exclues],
+                  key=lambda c: c.valeur(), reverse=True)
+
+
 def trouver_brelan(cartes):
     compteur = compter_rangs(cartes)
     brelans = [rang for rang, nb in compteur.items() if nb == 3]
     if len(brelans) == 1:
         rang_brelan = brelans[0]
-        cartes_brelan = [c for c in cartes if c.valeur() == rang_brelan]
-        kickers = sorted([c for c in cartes if c.valeur() != rang_brelan],
-                         key=lambda c: c.valeur(), reverse=True)
-        return cartes_brelan + kickers[:2]
+        return filtrer_par_valeur(cartes, rang_brelan) + kickers_tries(cartes, [rang_brelan])[:2]
     return None
 
 
@@ -28,11 +37,7 @@ def trouver_double_paire(cartes):
     if len(paires) == 2:
         paire_haute = paires[0]
         paire_basse = paires[1]
-        cartes_haute = [c for c in cartes if c.valeur() == paire_haute]
-        cartes_basse = [c for c in cartes if c.valeur() == paire_basse]
-        kickers = sorted([c for c in cartes if c.valeur() != paire_haute and c.valeur() != paire_basse],
-                         key=lambda c: c.valeur(), reverse=True)
-        return cartes_haute + cartes_basse + kickers[:1]
+        return filtrer_par_valeur(cartes, paire_haute) + filtrer_par_valeur(cartes, paire_basse) + kickers_tries(cartes, [paire_haute, paire_basse])[:1]
     return None
 
 
@@ -41,10 +46,7 @@ def trouver_paire(cartes):
     paires = [rang for rang, nb in compteur.items() if nb == 2]
     if len(paires) == 1:
         rang_paire = paires[0]
-        cartes_paire = [c for c in cartes if c.valeur() == rang_paire]
-        kickers = sorted([c for c in cartes if c.valeur() != rang_paire],
-                         key=lambda c: c.valeur(), reverse=True)
-        return cartes_paire + kickers[:3]
+        return filtrer_par_valeur(cartes, rang_paire) + kickers_tries(cartes, [rang_paire])[:3]
     return None
 
 
