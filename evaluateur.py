@@ -50,8 +50,39 @@ def trouver_paire(cartes):
     return None
 
 
+def trouver_suite(cartes):
+    cartes_triees = sorted(cartes, key=lambda c: c.valeur(), reverse=True)
+    valeurs = [c.valeur() for c in cartes_triees]
+
+    # verifier suite normale
+    if len(set(valeurs)) == 5:
+        if valeurs[0] - valeurs[4] == 4:
+            return cartes_triees
+
+    # verifier suite ace-low (wheel) : A-2-3-4-5
+    if set(valeurs) == {14, 2, 3, 4, 5}:
+        # on met 5 en premier et l'as a la fin
+        resultat = []
+        for v in [5, 4, 3, 2, 14]:
+            for c in cartes:
+                if c.valeur() == v and c not in resultat:
+                    resultat.append(c)
+                    break
+        return resultat
+
+    return None
+
+
 def evaluer_main(cartes):
     cartes_triees = sorted(cartes, key=lambda c: c.valeur(), reverse=True)
+
+    # verifier suite
+    resultat_suite = trouver_suite(cartes)
+    if resultat_suite is not None:
+        return {
+            "categorie": "suite",
+            "chosen5": resultat_suite,
+        }
 
     # verifier brelan
     resultat_brelan = trouver_brelan(cartes)
