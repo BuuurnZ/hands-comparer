@@ -102,3 +102,104 @@ def test_comparer_carre_kicker():
     resultat = comparer_joueurs(board, joueurs)
     # joueur1 gagne avec kicker A
     assert resultat["gagnants"] == ["joueur1"]
+
+
+# --- tests chosen5 est bien un sous-ensemble des 7 cartes ---
+
+def test_chosen5_sous_ensemble_des_7():
+    board = [
+        Carte("A", "trefle"),
+        Carte("2", "carreau"),
+        Carte("3", "coeur"),
+        Carte("4", "pique"),
+        Carte("9", "carreau"),
+    ]
+    hole = [Carte("5", "trefle"), Carte("K", "carreau")]
+    toutes = board + hole
+    resultat = meilleure_main(board, hole)
+    # chaque carte du chosen5 doit etre dans les 7 cartes
+    for c in resultat["chosen5"]:
+        assert c in toutes
+
+
+def test_chosen5_exactement_5_cartes():
+    board = [
+        Carte("A", "coeur"),
+        Carte("J", "coeur"),
+        Carte("9", "coeur"),
+        Carte("4", "coeur"),
+        Carte("2", "trefle"),
+    ]
+    hole = [Carte("6", "coeur"), Carte("K", "carreau")]
+    resultat = meilleure_main(board, hole)
+    assert len(resultat["chosen5"]) == 5
+
+
+def test_chosen5_cartes_distinctes():
+    board = [
+        Carte("K", "pique"),
+        Carte("K", "coeur"),
+        Carte("K", "carreau"),
+        Carte("3", "trefle"),
+        Carte("3", "pique"),
+    ]
+    hole = [Carte("A", "pique"), Carte("7", "carreau")]
+    resultat = meilleure_main(board, hole)
+    # pas de doublons dans chosen5
+    chosen = resultat["chosen5"]
+    for i in range(len(chosen)):
+        for j in range(i + 1, len(chosen)):
+            assert chosen[i] != chosen[j] or chosen[i].couleur != chosen[j].couleur
+
+
+# --- tests tie-break multi-joueurs avec 7 cartes ---
+
+def test_tiebreak_paire_kicker_via_joueurs():
+    board = [
+        Carte("10", "pique"),
+        Carte("10", "coeur"),
+        Carte("5", "carreau"),
+        Carte("3", "trefle"),
+        Carte("2", "pique"),
+    ]
+    joueurs = {
+        "joueur1": [Carte("A", "pique"), Carte("7", "carreau")],
+        "joueur2": [Carte("K", "pique"), Carte("8", "carreau")],
+    }
+    resultat = comparer_joueurs(board, joueurs)
+    # les deux ont paire de 10, joueur1 gagne avec kicker A
+    assert resultat["gagnants"] == ["joueur1"]
+
+
+def test_tiebreak_flush_via_joueurs():
+    board = [
+        Carte("2", "coeur"),
+        Carte("5", "coeur"),
+        Carte("8", "coeur"),
+        Carte("J", "coeur"),
+        Carte("3", "pique"),
+    ]
+    joueurs = {
+        "joueur1": [Carte("A", "coeur"), Carte("4", "carreau")],
+        "joueur2": [Carte("K", "coeur"), Carte("4", "pique")],
+    }
+    resultat = comparer_joueurs(board, joueurs)
+    # les deux ont flush coeur, joueur1 a l'as
+    assert resultat["gagnants"] == ["joueur1"]
+
+
+def test_tiebreak_full_via_joueurs():
+    board = [
+        Carte("7", "pique"),
+        Carte("7", "coeur"),
+        Carte("7", "carreau"),
+        Carte("5", "trefle"),
+        Carte("2", "pique"),
+    ]
+    joueurs = {
+        "joueur1": [Carte("A", "pique"), Carte("A", "coeur")],
+        "joueur2": [Carte("K", "pique"), Carte("K", "coeur")],
+    }
+    resultat = comparer_joueurs(board, joueurs)
+    # les deux ont full (7-7-7 + paire), joueur1 a paire d'as
+    assert resultat["gagnants"] == ["joueur1"]
