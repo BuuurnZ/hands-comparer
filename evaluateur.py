@@ -1,5 +1,20 @@
 # module pour evaluer les mains de poker
 from collections import Counter
+from itertools import combinations
+
+
+# rang de chaque categorie (plus c'est haut, plus c'est fort)
+RANG_CATEGORIES = {
+    "carte haute": 0,
+    "paire": 1,
+    "double paire": 2,
+    "brelan": 3,
+    "suite": 4,
+    "couleur": 5,
+    "full": 6,
+    "carre": 7,
+    "quinte flush": 8,
+}
 
 
 def compter_rangs(cartes):
@@ -186,4 +201,55 @@ def evaluer_main(cartes):
     return {
         "categorie": "carte haute",
         "chosen5": cartes_triees[:5],
+    }
+
+
+def score_main(resultat):
+    # calcule un score pour pouvoir comparer deux mains
+    # on utilise un tuple : (rang categorie, valeurs des cartes pour tie-break)
+    rang = RANG_CATEGORIES[resultat["categorie"]]
+    valeurs = [c.valeur() for c in resultat["chosen5"]]
+
+    if resultat["categorie"] == "suite" or resultat["categorie"] == "quinte flush":
+        # pour la suite, la premiere carte est la plus haute
+        # sauf pour le wheel ou c'est 5-high
+        return (rang, valeurs[0])
+
+    return (rang,) + tuple(valeurs)
+
+
+def meilleure_main(board, hole):
+    # on combine les 7 cartes et on teste toutes les combinaisons de 5
+    toutes_cartes = board + hole
+    meilleur = None
+    meilleur_score = None
+
+    for combo in combinations(toutes_cartes, 5):
+        resultat = evaluer_main(list(combo))
+        s = score_main(resultat)
+        if meilleur_score is None or s > meilleur_score:
+            meilleur = resultat
+            meilleur_score = s
+
+    return meilleur
+
+
+def comparer_joueurs(board, joueurs):
+    # evalue la meilleure main de chaque joueur et compare
+    resultats = {}
+    scores = {}
+
+    for nom, hole in joueurs.items():
+        resultats[nom] = meilleure_main(board, hole)
+        scores[nom] = score_main(resultats[nom])
+
+    # trouver le meilleur score
+    meilleur_score = max(scores.values())
+
+    # trouver tous les joueurs qui ont ce score
+    gagnants = [nom for nom, s in scores.items() if s == meilleur_score]
+
+    return {
+        "gagnants": gagnants,
+        "resultats": resultats,
     }
