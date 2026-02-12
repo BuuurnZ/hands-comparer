@@ -50,6 +50,31 @@ def trouver_paire(cartes):
     return None
 
 
+def trouver_carre(cartes):
+    compteur = compter_rangs(cartes)
+    carres = [rang for rang, nb in compteur.items() if nb == 4]
+    if len(carres) == 1:
+        rang_carre = carres[0]
+        cartes_carre = [c for c in cartes if c.valeur() == rang_carre]
+        kickers = sorted([c for c in cartes if c.valeur() != rang_carre],
+                         key=lambda c: c.valeur(), reverse=True)
+        return cartes_carre + kickers[:1]
+    return None
+
+
+def trouver_full(cartes):
+    compteur = compter_rangs(cartes)
+    brelans = [rang for rang, nb in compteur.items() if nb == 3]
+    paires = [rang for rang, nb in compteur.items() if nb == 2]
+    if len(brelans) == 1 and len(paires) == 1:
+        rang_brelan = brelans[0]
+        rang_paire = paires[0]
+        cartes_brelan = [c for c in cartes if c.valeur() == rang_brelan]
+        cartes_paire = [c for c in cartes if c.valeur() == rang_paire]
+        return cartes_brelan + cartes_paire
+    return None
+
+
 def trouver_couleur(cartes):
     # verifie si toutes les cartes ont la meme couleur
     couleurs = [c.couleur for c in cartes]
@@ -95,8 +120,32 @@ def trouver_suite(cartes):
 def evaluer_main(cartes):
     cartes_triees = sorted(cartes, key=lambda c: c.valeur(), reverse=True)
 
-    # verifier couleur (flush)
+    # verifier quinte flush (suite + couleur en meme temps)
+    resultat_suite = trouver_suite(cartes)
     resultat_couleur = trouver_couleur(cartes)
+    if resultat_suite is not None and resultat_couleur is not None:
+        return {
+            "categorie": "quinte flush",
+            "chosen5": resultat_suite,
+        }
+
+    # verifier carre
+    resultat_carre = trouver_carre(cartes)
+    if resultat_carre is not None:
+        return {
+            "categorie": "carre",
+            "chosen5": resultat_carre,
+        }
+
+    # verifier full
+    resultat_full = trouver_full(cartes)
+    if resultat_full is not None:
+        return {
+            "categorie": "full",
+            "chosen5": resultat_full,
+        }
+
+    # verifier couleur (flush)
     if resultat_couleur is not None:
         return {
             "categorie": "couleur",
@@ -104,7 +153,6 @@ def evaluer_main(cartes):
         }
 
     # verifier suite
-    resultat_suite = trouver_suite(cartes)
     if resultat_suite is not None:
         return {
             "categorie": "suite",

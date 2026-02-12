@@ -281,3 +281,116 @@ def test_flush_pas_si_couleurs_differentes():
     ]
     resultat = evaluer_main(main)
     assert resultat["categorie"] != "couleur"
+
+
+# --- tests pour full house ---
+
+def test_full_house_basique():
+    main = [
+        Carte("K", "pique"),
+        Carte("K", "coeur"),
+        Carte("K", "carreau"),
+        Carte("3", "trefle"),
+        Carte("3", "pique"),
+    ]
+    resultat = evaluer_main(main)
+    assert resultat["categorie"] == "full"
+
+
+def test_full_house_chosen5():
+    main = [
+        Carte("10", "pique"),
+        Carte("10", "coeur"),
+        Carte("10", "carreau"),
+        Carte("A", "trefle"),
+        Carte("A", "pique"),
+    ]
+    resultat = evaluer_main(main)
+    assert resultat["categorie"] == "full"
+    # brelan d'abord, puis la paire
+    valeurs = [c.valeur() for c in resultat["chosen5"]]
+    assert valeurs == [10, 10, 10, 14, 14]
+
+
+# --- tests pour carre (four of a kind) ---
+
+def test_carre_basique():
+    main = [
+        Carte("7", "pique"),
+        Carte("7", "coeur"),
+        Carte("7", "carreau"),
+        Carte("7", "trefle"),
+        Carte("A", "pique"),
+    ]
+    resultat = evaluer_main(main)
+    assert resultat["categorie"] == "carre"
+
+
+def test_carre_chosen5():
+    main = [
+        Carte("J", "pique"),
+        Carte("J", "coeur"),
+        Carte("J", "carreau"),
+        Carte("J", "trefle"),
+        Carte("K", "pique"),
+    ]
+    resultat = evaluer_main(main)
+    assert resultat["categorie"] == "carre"
+    # les 4 du carre puis le kicker
+    valeurs = [c.valeur() for c in resultat["chosen5"]]
+    assert valeurs == [11, 11, 11, 11, 13]
+
+
+# --- tests pour quinte flush (straight flush) ---
+
+def test_quinte_flush_basique():
+    main = [
+        Carte("5", "coeur"),
+        Carte("6", "coeur"),
+        Carte("7", "coeur"),
+        Carte("8", "coeur"),
+        Carte("9", "coeur"),
+    ]
+    resultat = evaluer_main(main)
+    assert resultat["categorie"] == "quinte flush"
+
+
+def test_quinte_flush_chosen5():
+    main = [
+        Carte("5", "coeur"),
+        Carte("6", "coeur"),
+        Carte("7", "coeur"),
+        Carte("8", "coeur"),
+        Carte("9", "coeur"),
+    ]
+    resultat = evaluer_main(main)
+    valeurs = [c.valeur() for c in resultat["chosen5"]]
+    assert valeurs == [9, 8, 7, 6, 5]
+
+
+def test_quinte_flush_royale():
+    main = [
+        Carte("10", "pique"),
+        Carte("J", "pique"),
+        Carte("Q", "pique"),
+        Carte("K", "pique"),
+        Carte("A", "pique"),
+    ]
+    resultat = evaluer_main(main)
+    assert resultat["categorie"] == "quinte flush"
+    valeurs = [c.valeur() for c in resultat["chosen5"]]
+    assert valeurs == [14, 13, 12, 11, 10]
+
+
+def test_quinte_flush_ace_low():
+    main = [
+        Carte("A", "carreau"),
+        Carte("2", "carreau"),
+        Carte("3", "carreau"),
+        Carte("4", "carreau"),
+        Carte("5", "carreau"),
+    ]
+    resultat = evaluer_main(main)
+    assert resultat["categorie"] == "quinte flush"
+    valeurs = [c.valeur() for c in resultat["chosen5"]]
+    assert valeurs == [5, 4, 3, 2, 14]
