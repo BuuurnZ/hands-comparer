@@ -170,3 +170,73 @@ def test_brelan_bas():
     assert resultat["categorie"] == "brelan"
     valeurs = [c.valeur() for c in resultat["chosen5"]]
     assert valeurs == [2, 2, 2, 14, 13]
+
+
+# --- tests pour suite (straight) ---
+
+def test_suite_basique():
+    main = [
+        Carte("5", "pique"),
+        Carte("6", "coeur"),
+        Carte("7", "carreau"),
+        Carte("8", "trefle"),
+        Carte("9", "pique"),
+    ]
+    resultat = evaluer_main(main)
+    assert resultat["categorie"] == "suite"
+
+
+def test_suite_chosen5():
+    main = [
+        Carte("5", "pique"),
+        Carte("6", "coeur"),
+        Carte("7", "carreau"),
+        Carte("8", "trefle"),
+        Carte("9", "pique"),
+    ]
+    resultat = evaluer_main(main)
+    # triees de la plus haute a la plus basse
+    valeurs = [c.valeur() for c in resultat["chosen5"]]
+    assert valeurs == [9, 8, 7, 6, 5]
+
+
+def test_suite_ace_high():
+    main = [
+        Carte("10", "pique"),
+        Carte("J", "coeur"),
+        Carte("Q", "carreau"),
+        Carte("K", "trefle"),
+        Carte("A", "pique"),
+    ]
+    resultat = evaluer_main(main)
+    assert resultat["categorie"] == "suite"
+    valeurs = [c.valeur() for c in resultat["chosen5"]]
+    assert valeurs == [14, 13, 12, 11, 10]
+
+
+def test_suite_ace_low_wheel():
+    main = [
+        Carte("A", "pique"),
+        Carte("2", "coeur"),
+        Carte("3", "carreau"),
+        Carte("4", "trefle"),
+        Carte("5", "pique"),
+    ]
+    resultat = evaluer_main(main)
+    assert resultat["categorie"] == "suite"
+    # wheel : 5-high, l'as est en bas
+    valeurs = [c.valeur() for c in resultat["chosen5"]]
+    assert valeurs == [5, 4, 3, 2, 14]
+
+
+def test_pas_de_wrap_around():
+    # Q-K-A-2-3 n'est PAS une suite
+    main = [
+        Carte("Q", "pique"),
+        Carte("K", "coeur"),
+        Carte("A", "carreau"),
+        Carte("2", "trefle"),
+        Carte("3", "pique"),
+    ]
+    resultat = evaluer_main(main)
+    assert resultat["categorie"] != "suite"
