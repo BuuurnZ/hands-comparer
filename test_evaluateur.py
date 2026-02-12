@@ -240,3 +240,44 @@ def test_pas_de_wrap_around():
     ]
     resultat = evaluer_main(main)
     assert resultat["categorie"] != "suite"
+
+
+# --- tests pour couleur (flush) ---
+
+def test_flush_basique():
+    main = [
+        Carte("A", "coeur"),
+        Carte("J", "coeur"),
+        Carte("9", "coeur"),
+        Carte("6", "coeur"),
+        Carte("3", "coeur"),
+    ]
+    resultat = evaluer_main(main)
+    assert resultat["categorie"] == "couleur"
+
+
+def test_flush_chosen5():
+    main = [
+        Carte("K", "pique"),
+        Carte("10", "pique"),
+        Carte("8", "pique"),
+        Carte("5", "pique"),
+        Carte("2", "pique"),
+    ]
+    resultat = evaluer_main(main)
+    assert resultat["categorie"] == "couleur"
+    # rangs decroissants
+    valeurs = [c.valeur() for c in resultat["chosen5"]]
+    assert valeurs == [13, 10, 8, 5, 2]
+
+
+def test_flush_pas_si_couleurs_differentes():
+    main = [
+        Carte("A", "coeur"),
+        Carte("J", "coeur"),
+        Carte("9", "coeur"),
+        Carte("6", "pique"),
+        Carte("3", "coeur"),
+    ]
+    resultat = evaluer_main(main)
+    assert resultat["categorie"] != "couleur"

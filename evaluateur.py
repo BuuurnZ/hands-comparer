@@ -50,6 +50,14 @@ def trouver_paire(cartes):
     return None
 
 
+def trouver_couleur(cartes):
+    # verifie si toutes les cartes ont la meme couleur
+    couleurs = [c.couleur for c in cartes]
+    if len(set(couleurs)) == 1:
+        return sorted(cartes, key=lambda c: c.valeur(), reverse=True)
+    return None
+
+
 def est_suite_normale(valeurs):
     # verifie si les valeurs forment une suite normale (sans trou)
     return len(set(valeurs)) == 5 and valeurs[0] - valeurs[4] == 4
@@ -86,6 +94,14 @@ def trouver_suite(cartes):
 
 def evaluer_main(cartes):
     cartes_triees = sorted(cartes, key=lambda c: c.valeur(), reverse=True)
+
+    # verifier couleur (flush)
+    resultat_couleur = trouver_couleur(cartes)
+    if resultat_couleur is not None:
+        return {
+            "categorie": "couleur",
+            "chosen5": resultat_couleur,
+        }
 
     # verifier suite
     resultat_suite = trouver_suite(cartes)
